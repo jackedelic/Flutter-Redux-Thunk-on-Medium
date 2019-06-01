@@ -3,8 +3,8 @@ import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 import 'dart:convert'; // to convert Response object to Map object
-import 'dart:async';
 import 'package:http/http.dart' as http;
+
 // AppState
 class AppState {
   int _counter;
@@ -17,10 +17,10 @@ class AppState {
 
   AppState(this._counter, this._quote, this._author);
 }
+
 // Sync Action
-enum Action {
-  IncrementAction
-}
+enum Action { IncrementAction }
+
 class UpdateQuoteAction {
   String _quote;
   String _author;
@@ -30,51 +30,44 @@ class UpdateQuoteAction {
 
   UpdateQuoteAction(this._quote, this._author);
 }
+
 // ThunkAction
 ThunkAction<AppState> getRandomQuote = (Store<AppState> store) async {
-
   http.Response response = await http.get(
-    Uri.encodeFull('http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1'),
+    Uri.encodeFull(
+        'http://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1'),
   );
   List<dynamic> result = json.decode(response.body);
 
   // This is to remove the <p></p> html tag received. This code is not crucial.
-  String quote = result[0]['content'].replaceAll(new RegExp('[(<p>)(</p>)]'), '').replaceAll(new RegExp('&#8217;'),'\'');
+  String quote = result[0]['content']
+      .replaceAll(new RegExp('[(<p>)(</p>)]'), '')
+      .replaceAll(new RegExp('&#8217;'), '\'');
   String author = result[0]['title'];
 
-  store.dispatch(
-      new UpdateQuoteAction(
-          quote,
-          author
-      )
-  );
+  store.dispatch(new UpdateQuoteAction(quote, author));
 };
 
 // Reducer
 AppState reducer(AppState prev, dynamic action) {
-
   if (action == Action.IncrementAction) {
-
-    AppState newAppState = new AppState(prev.counter + 1, prev.quote, prev.author);
+    AppState newAppState =
+        new AppState(prev.counter + 1, prev.quote, prev.author);
 
     return newAppState;
-
   } else if (action is UpdateQuoteAction) {
-    AppState newAppState = new AppState(prev.counter, action.quote, action.author);
+    AppState newAppState =
+        new AppState(prev.counter, action.quote, action.author);
 
     return newAppState;
   } else {
     return prev;
   }
-
 }
-// store that hold our current appstate
-final store = new Store<AppState>(
-  reducer,
-  initialState: new AppState(0, "", ""),
-  middleware: [thunkMiddleware]
-);
 
+// store that hold our current appstate
+final store = new Store<AppState>(reducer,
+    initialState: new AppState(0, "", ""), middleware: [thunkMiddleware]);
 
 void main() => runApp(new MyApp());
 
@@ -105,7 +98,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -134,11 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
               converter: (store) => store.state,
               builder: (_, state) {
                 return new Text(
-                    ' ${state.quote} \n -${state.author}',
+                  ' ${state.quote} \n -${state.author}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 20.0
-                  ),
+                  style: const TextStyle(fontSize: 20.0),
                 );
               },
             ),
@@ -148,13 +138,11 @@ class _MyHomePageState extends State<MyHomePage> {
               converter: (store) => () => store.dispatch(getRandomQuote),
               builder: (_, generateQuoteCallback) {
                 return new FlatButton(
-                  color: Colors.lightBlue,
+                    color: Colors.lightBlue,
                     onPressed: generateQuoteCallback,
-                    child: new Text("generate random quote")
-                );
+                    child: new Text("generate random quote"));
               },
             )
-
           ],
         ),
       ),
